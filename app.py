@@ -37,13 +37,19 @@ if uploaded_file is not None:
             # Rename columns for display
             grouped = grouped.rename(columns={seller_sku_col: 'Seller SKU', quantity_col: 'Quantity'})
 
-            # Generate markdown table
+            # Display editable table
             st.subheader("Summarized SKU Quantities")
+            edited_grouped = st.data_editor(
+                grouped,
+                column_config={
+                    "Seller SKU": st.column_config.TextColumn(disabled=True),
+                    "Quantity": st.column_config.NumberColumn(min_value=0, step=1)
+                },
+                hide_index=True,
+                num_rows="fixed"
+            )
 
-            # Create table header
-            table_md = "| Seller SKU | Qty |\n|:-----------|-----:|\n"
-
-            # Create HTML table for printing
+            # Create HTML table for printing using edited data
             html_table = """
             <table style="border-collapse: collapse; width: 100%;">
                 <tr>
@@ -52,9 +58,8 @@ if uploaded_file is not None:
                 </tr>
             """
 
-            # Add rows to both tables
-            for _, row in grouped.iterrows():
-                table_md += f"| {row['Seller SKU']} | {int(row['Quantity'])} |\n"
+            # Add rows to HTML table using edited data
+            for _, row in edited_grouped.iterrows():
                 html_table += f"""
                 <tr>
                     <td style="border: 1px solid black; padding: 8px;">{row['Seller SKU']}</td>
@@ -63,9 +68,6 @@ if uploaded_file is not None:
                 """
 
             html_table += "</table>"
-
-            # Display the markdown table
-            st.markdown(table_md)
 
             # Print button using HTML and JavaScript to open in new tab
             print_button_html = f"""
